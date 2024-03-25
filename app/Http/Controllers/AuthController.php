@@ -13,10 +13,9 @@ class AuthController extends Controller
         $username = $request->username;
         $password = $request->password;
         // Cek apakah pengguna dengan username yang diberikan ada dalam tabel
-        $user = User::where('username', $username)->first();
+        $user = User::where('username', $username)->where('role',$role)->first();
         if($user) {
             if(password_verify($password, $user->password)) {
-                $token = $user->createToken('authToken')->plainTextToken;
                 return response()->json(['status_auth' => true,'message'=>'Login Successfuly'], 200);
             } else {
                 // Password tidak cocok
