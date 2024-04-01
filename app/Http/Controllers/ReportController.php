@@ -18,24 +18,29 @@ class ReportController extends Controller
         // Validate the incoming request data
         $validatedData = $request->validate([
             'type' => 'required|string',
-            'prove' => 'required|string',
+            'prove' => 'required|max:5048',
             'description' => 'required|string',
             'status' => 'required|string',
             'mahasiswa' => 'required|integer',
             'dosen_wali' => 'required|integer',
         ]);
-
-        // Create a new Report instance
-        $report = new Report();
-        $report->type = $request->type;
-        $report->prove = $request->prove;
-        $report->description = $request->description;
-        $report->status = $request->status;
-        $report->mahasiswa = $request->mahasiswa;
-        $report->dosen_wali = $request->dosen_wali;
-
-        // Save the report
-        $report->save();
+        if ($request->hasFile('prove')) {
+            $image = $request->file('prove');
+            $imageName = time() . '_' . $image->getClientOriginalName();
+            $image->storeAs('public/assets/prove', $imageName);
+            
+            $report = new Report();
+            $report->type = $request->type;
+            $report->prove = $imageName;
+            $report->description = $request->description;
+            $report->status = $request->status;
+            $report->mahasiswa = $request->mahasiswa;
+            $report->dosen_wali = $request->dosen_wali;
+            $report->save();
+        } else {
+            return response()->json(['status' => false, 'message' => 'Image is required'], 400);
+        }
+       
 
         // Redirect to a specified route or action
         return response()->json(['status' => true,'message'=>'Report Success Created'], 200);
@@ -94,16 +99,28 @@ class ReportController extends Controller
         // Validate the incoming request data
         $validatedData = $request->validate([
             'type' => 'required|string',
-            'prove' => 'required|string',
+            'prove' => 'sometimes|max:5048',
             'description' => 'required|string',
             'status' => 'required|string',
             'mahasiswa' => 'required|integer',
             'dosen_wali' => 'required|integer',
         ]);
 
-        // Update the report with the new data
-        $report->update($request->all());
-
+        if ($request->hasFile('prove')) {
+            $image = $request->file('prove');
+            $imageName = time() . '_' . $image->getClientOriginalName();
+            $image->storeAs('public/assets/prove', $imageName);
+            // Delete previous image if exists
+            Storage::delete('public/assets/prove/' . $report->prove);
+            $report->prove = $imageName;
+        }
+        $report->type = $request->type;
+        $report->description = $request->description;
+        $report->status = $request->status;
+        $report->mahasiswa = $request->mahasiswa;
+        $report->dosen_wali = $request->dosen_wali;
+        $report->save();
+        
         return response()->json(['status' => true,'message'=>'Report Success Updated'], 200);
     }
 
@@ -115,10 +132,19 @@ class ReportController extends Controller
      */
     public function destroy($id)
     {
-        // Find the report by its id and delete it
-        Report::findOrFail($id)->delete();
-
-        // Redirect to a specified route or action
-        return response()->json(['status' => true,'message'=>'Report Success Deleted'], 200);
+        // Find the report by its id
+        $report = Report::findOrFail($id);
+    
+        // Delete the associated image file if it exists
+        if ($report->prove) {
+            Storage::delete('public/assets/prove/' . $report->prove);
+        }
+    
+        // Delete the report
+        $report->delete();
+    
+        // Return a JSON response indicating success
+        return response()->json(['status' => true, 'message' => 'Report Successfully Deleted'], 200);
     }
+    
 }
