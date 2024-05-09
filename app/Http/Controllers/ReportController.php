@@ -89,7 +89,7 @@ class ReportController extends Controller
     {
         try {
             // Find the report by its id
-            $report = Report::where("status",$request->status);
+            $report = Report::where("status",$request->status)->get();
 
             // Return the view with the report data
             return response()->json(['status' => true,'data'=>$report], 200);
