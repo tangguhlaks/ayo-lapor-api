@@ -84,6 +84,21 @@ class ReportController extends Controller
         }
     }
 
+
+    public function showByStatus(Request $request)
+    {
+        try {
+            // Find the report by its id
+            $report = Report::where("status",$request->status);
+
+            // Return the view with the report data
+            return response()->json(['status' => true,'data'=>$report], 200);
+        } catch (\Throwable $th) {
+            return response()->json(['status' => false,'data'=>$report], 404);
+        }
+    }
+
+
     /**
      * Update the specified resource in storage.
      *
