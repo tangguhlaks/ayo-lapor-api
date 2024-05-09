@@ -27,7 +27,7 @@ class ReportController extends Controller
         if ($request->hasFile('prove')) {
             $image = $request->file('prove');
             $imageName = time() . '_' . $image->getClientOriginalName();
-            $image->storeAs('public/assets/prove', $imageName);
+            $image->move(public_path('assets/prove'),$imageName);
             
             $report = new Report();
             $report->type = $request->type;
@@ -109,9 +109,9 @@ class ReportController extends Controller
         if ($request->hasFile('prove')) {
             $image = $request->file('prove');
             $imageName = time() . '_' . $image->getClientOriginalName();
-            $image->storeAs('public/assets/prove', $imageName);
+            $image->move(public_path('assets/prove'),$imageName);
             // Delete previous image if exists
-            Storage::delete('public/assets/prove/' . $report->prove);
+            unlink(public_path('assets/prove/'.$news->prove));
             $report->prove = $imageName;
         }
         $report->type = $request->type;
@@ -137,7 +137,7 @@ class ReportController extends Controller
     
         // Delete the associated image file if it exists
         if ($report->prove) {
-            Storage::delete('public/assets/prove/' . $report->prove);
+            unlink(public_path('assets/news/'.$report->prove));
         }
     
         // Delete the report
