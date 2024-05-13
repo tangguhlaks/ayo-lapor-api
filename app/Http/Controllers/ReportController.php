@@ -77,7 +77,9 @@ class ReportController extends Controller
     {
         try {
             // Find the report by its id
-            $report = Report::all();
+            $report = Report::select("reports.*","users.first_name","users.last_name")
+                              ->leftJoin("users","users.id","=","reports.mahasiswa")
+                              ->get();
 
             // Return the view with the report data
             return response()->json(['status' => true,'data'=>$report], 200);
@@ -91,7 +93,10 @@ class ReportController extends Controller
     {
         try {
             // Find the report by its id
-            $report = Report::where("status",$request->status)->get();
+            $report = Report::select("reports.*","users.first_name","users.last_name")
+            ->leftJoin("users","users.id","=","reports.mahasiswa")
+            ->where("reports.status",$request->status)
+            ->get();
 
             // Return the view with the report data
             return response()->json(['status' => true,'data'=>$report], 200);
