@@ -17,6 +17,7 @@ class ReportController extends Controller
     {
         // Validate the incoming request data
         $validatedData = $request->validate([
+            'title' => 'required|string',
             'type' => 'required|string',
             'prove' => 'required|max:5048',
             'description' => 'required|string',
@@ -30,6 +31,7 @@ class ReportController extends Controller
             $image->move(public_path('assets/prove'),$imageName);
             
             $report = new Report();
+            $report->title = $request->title;
             $report->type = $request->type;
             $report->prove = $imageName;
             $report->description = $request->description;
@@ -114,6 +116,7 @@ class ReportController extends Controller
         // Validate the incoming request data
         $validatedData = $request->validate([
             'type' => 'required|string',
+            'title' => 'required|string',
             'prove' => 'sometimes|max:5048',
             'description' => 'required|string',
             'status' => 'required|string',
@@ -129,11 +132,27 @@ class ReportController extends Controller
             unlink(public_path('assets/prove/'.$news->prove));
             $report->prove = $imageName;
         }
+        $report->title = $request->title;
         $report->type = $request->type;
         $report->description = $request->description;
         $report->status = $request->status;
         $report->mahasiswa = $request->mahasiswa;
         $report->dosen_wali = $request->dosen_wali;
+        $report->save();
+        
+        return response()->json(['status' => true,'message'=>'Report Success Updated'], 200);
+    }
+
+    public function updateStatus(Request $request, $id)
+    {
+        // Find the report by its id
+        $report = Report::findOrFail($id);
+
+        // Validate the incoming request data
+        $validatedData = $request->validate([
+            'status' => 'required|string'
+        ]);
+        $report->status = $request->status;
         $report->save();
         
         return response()->json(['status' => true,'message'=>'Report Success Updated'], 200);
