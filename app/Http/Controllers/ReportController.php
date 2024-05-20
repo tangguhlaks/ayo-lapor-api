@@ -92,12 +92,19 @@ class ReportController extends Controller
     public function showByStatus(Request $request)
     {
         try {
-            // Find the report by its id
-            $report = Report::select("reports.*","users.first_name","users.last_name")
-            ->leftJoin("users","users.id","=","reports.mahasiswa")
-            ->where("reports.status",$request->status)
-            ->get();
+            $statuses = json_decode($request->input('status'), true);
 
+            // Check if $statuses is an array, if not, make it an array
+            if (!is_array($statuses)) {
+                $statuses = [$statuses];
+            }
+
+            // Fetch reports with statuses in the array
+            $report = Report::select("reports.*", "users.first_name", "users.last_name")
+                ->leftJoin("users", "users.id", "=", "reports.mahasiswa")
+                ->whereIn("reports.status", $statuses)
+                ->get();
+                
             // Return the view with the report data
             return response()->json(['status' => true,'data'=>$report], 200);
         } catch (\Throwable $th) {
