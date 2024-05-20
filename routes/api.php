@@ -24,6 +24,7 @@ Route::post('/login', [AuthController::class, 'login']);
 Route::post('/report', [ReportController::class, 'store']);
 Route::post('/report-by-status', [ReportController::class, 'showByStatus']);
 Route::post('/count-by-status', [ReportController::class, 'getCountByStatus']);
+Route::post('/count-by-type', [ReportController::class, 'getCountByType']);
 Route::get('/report/{id}', [ReportController::class, 'show']);
 Route::get('/report', [ReportController::class, 'showAll']);
 Route::put('/report/{id}', [ReportController::class, 'update']);

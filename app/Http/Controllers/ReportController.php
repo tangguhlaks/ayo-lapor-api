@@ -120,6 +120,22 @@ class ReportController extends Controller
             return response()->json(['status' => false,'data'=>$report], 404);
         }
     }
+    
+    public function getCountByType(Request $request)
+    {
+        try {
+            // Find the report by its id
+            $report = Report::select("reports.*","users.first_name","users.last_name")
+            ->leftJoin("users","users.id","=","reports.mahasiswa")
+            ->where("reports.type",$request->type)
+            ->count();
+
+            // Return the view with the report data
+            return response()->json(['status' => true,'data'=>$report], 200);
+        } catch (\Throwable $th) {
+            return response()->json(['status' => false,'data'=>$report], 404);
+        }
+    }
 
 
     /**
