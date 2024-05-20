@@ -105,6 +105,22 @@ class ReportController extends Controller
         }
     }
 
+    public function getCountByStatus(Request $request)
+    {
+        try {
+            // Find the report by its id
+            $report = Report::select("reports.*","users.first_name","users.last_name")
+            ->leftJoin("users","users.id","=","reports.mahasiswa")
+            ->where("reports.status",$request->status)
+            ->count();
+
+            // Return the view with the report data
+            return response()->json(['status' => true,'data'=>$report], 200);
+        } catch (\Throwable $th) {
+            return response()->json(['status' => false,'data'=>$report], 404);
+        }
+    }
+
 
     /**
      * Update the specified resource in storage.
