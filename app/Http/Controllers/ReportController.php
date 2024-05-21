@@ -44,12 +44,13 @@ class ReportController extends Controller
             $report->dosen_wali = $request->dosen_wali;
             $report->save();
 
-            // Send FCM notification
-            $firebase = (new Factory)->withServiceAccount(public_path('assets/credential_firebase.json'))->create();
-            $messaging = $firebase->getMessaging();
+            //  Send FCM notification
+            $firebaseCredentialsPath = public_path('assets/credential_firebase.json'); // Ensure the path is correct
+            $factory = (new Factory)->withServiceAccount($firebaseCredentialsPath);
+            $messaging = $factory->createMessaging();
 
             $message = CloudMessage::withTarget('topic', 'report_submitted')
-                ->withNotification(Notification::create("Laporan Baru Dibuat", "Laporan dengan judul '$request->title' telah dibuat"))
+                ->withNotification(Notification::create("Laporan Baru Dibuat", "Laporan dengan judul '{$request->title}' telah dibuat"))
                 ->withData(['report_id' => $report->id]);
 
             try {
