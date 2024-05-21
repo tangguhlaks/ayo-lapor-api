@@ -45,7 +45,7 @@ class ReportController extends Controller
             $report->save();
 
             // Send FCM notification
-            $firebase = (new Factory)->withServiceAccount(url('assets/credential_firebase.json'))->create();
+            $firebase = (new Factory)->withServiceAccount(public_path('assets/credential_firebase.json'))->create();
             $messaging = $firebase->getMessaging();
 
             $message = CloudMessage::withTarget('topic', 'report_submitted')
