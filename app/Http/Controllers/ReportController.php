@@ -88,6 +88,22 @@ class ReportController extends Controller
         }
     }
 
+    public function showByUsername($username)
+    {
+        try {
+            // Find the report by its id
+            $report = Report::select("reports.*","users.first_name","users.last_name")
+                              ->leftJoin("users","users.id","=","reports.mahasiswa")
+                              ->where("users.username",$username)
+                              ->get();
+
+            // Return the view with the report data
+            return response()->json(['status' => true,'data'=>$report], 200);
+        } catch (\Throwable $th) {
+            return response()->json(['status' => false,'data'=>$report], 404);
+        }
+    }
+
 
     public function showByStatus(Request $request)
     {
@@ -215,7 +231,7 @@ class ReportController extends Controller
     
         // Delete the associated image file if it exists
         if ($report->prove) {
-            unlink(public_path('assets/news/'.$report->prove));
+            unlink(public_path('assets/prove/'.$report->prove));
         }
     
         // Delete the report
