@@ -2,6 +2,9 @@
 
 namespace App\Http\Controllers;
 
+use Kreait\Firebase\Factory;
+use Kreait\Firebase\Messaging\CloudMessage;
+use Kreait\Firebase\Messaging\Notification;
 use Illuminate\Http\Request;
 use App\Models\Report; // Assuming your Report model is located in 'app/Models/Report.php'
 
@@ -25,11 +28,12 @@ class ReportController extends Controller
             'mahasiswa' => 'required|integer',
             'dosen_wali' => 'required|integer',
         ]);
+
         if ($request->hasFile('prove')) {
             $image = $request->file('prove');
             $imageName = time() . '_' . $image->getClientOriginalName();
-            $image->move(public_path('assets/prove'),$imageName);
-            
+            $image->move(public_path('assets/prove'), $imageName);
+
             $report = new Report();
             $report->title = $request->title;
             $report->type = $request->type;
@@ -39,14 +43,29 @@ class ReportController extends Controller
             $report->mahasiswa = $request->mahasiswa;
             $report->dosen_wali = $request->dosen_wali;
             $report->save();
+
+            // Send FCM notification
+            $firebase = (new Factory)->withServiceAccount(url('assets/credential_firebase.json'))->create();
+            $messaging = $firebase->getMessaging();
+
+            $message = CloudMessage::withTarget('topic', 'report_submitted')
+                ->withNotification(Notification::create("Laporan Baru Dibuat", "Laporan dengan judul '$request->title' telah dibuat"))
+                ->withData(['report_id' => $report->id]);
+
+            try {
+                $messaging->send($message);
+            } catch (\Exception $e) {
+                // Handle the error
+                return response()->json(['status' => false, 'message' => 'Report created but notification failed: ' . $e->getMessage()], 500);
+            }
         } else {
             return response()->json(['status' => false, 'message' => 'Image is required'], 400);
         }
-       
 
         // Redirect to a specified route or action
-        return response()->json(['status' => true,'message'=>'Report Success Created'], 200);
+        return response()->json(['status' => true, 'message' => 'Report successfully created and notification sent'], 200);
     }
+
 
     /**
      * Display the specified resource.
