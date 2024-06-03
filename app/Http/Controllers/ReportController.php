@@ -45,16 +45,16 @@ class ReportController extends Controller
             $report->save();
 
             //  Send FCM notification
-            $firebaseCredentialsPath = public_path('assets/credential_firebase.json'); // Ensure the path is correct
-            $factory = (new Factory)->withServiceAccount($firebaseCredentialsPath);
-            $messaging = $factory->createMessaging();
+            // $firebaseCredentialsPath = public_path('assets/credential_firebase.json'); // Ensure the path is correct
+            // $factory = (new Factory)->withServiceAccount($firebaseCredentialsPath);
+            // $messaging = $factory->createMessaging();
 
-            $message = CloudMessage::withTarget('topic', 'report_submitted')
-                ->withNotification(Notification::create("Laporan Baru Dibuat", "Laporan dengan judul '{$request->title}' telah dibuat"))
-                ->withData(['report_id' => $report->id]);
+            // $message = CloudMessage::withTarget('topic', 'report_submitted')
+            //     ->withNotification(Notification::create("Laporan Baru Dibuat", "Laporan dengan judul '{$request->title}' telah dibuat"))
+            //     ->withData(['report_id' => $report->id]);
 
             try {
-                $messaging->send($message);
+                // $messaging->send($message);
             } catch (\Exception $e) {
                 // Handle the error
                 return response()->json(['status' => false, 'message' => 'Report created but notification failed: ' . $e->getMessage()], 500);
@@ -180,48 +180,52 @@ class ReportController extends Controller
         }
     }
 
-
-    /**
-     * Update the specified resource in storage.
-     *
-     * @param  \Illuminate\Http\Request  $request
-     * @param  int  $id
-     * @return \Illuminate\Http\Response
-     */
-    public function update(Request $request, $id)
+    public function update(Request $request)
     {
-        // Find the report by its id
-        $report = Report::findOrFail($id);
-
-        // Validate the incoming request data
-        $validatedData = $request->validate([
-            'type' => 'required|string',
-            'title' => 'required|string',
-            'prove' => 'sometimes|max:5048',
-            'description' => 'required|string',
-            'status' => 'required|string',
-            'mahasiswa' => 'required|integer',
-            'dosen_wali' => 'required|integer',
-        ]);
-
-        if ($request->hasFile('prove')) {
-            $image = $request->file('prove');
-            $imageName = time() . '_' . $image->getClientOriginalName();
-            $image->move(public_path('assets/prove'),$imageName);
-            // Delete previous image if exists
-            unlink(public_path('assets/prove/'.$news->prove));
-            $report->prove = $imageName;
+        try {
+    
+            // Validate the incoming request data
+            $validatedData = $request->validate([
+                'type' => 'required|string',
+                'title' => 'required|string',
+                'prove' => 'sometimes|max:5048',
+                'description' => 'required|string',
+                'status' => 'required|string',
+                'mahasiswa' => 'required|integer',
+                'dosen_wali' => 'required|integer',
+            ]);
+            // Find the report by its id
+            $report = Report::findOrFail($request->id);
+            if ($request->hasFile('prove')) {
+                $image = $request->file('prove');
+                $imageName = time() . '_' . $image->getClientOriginalName();
+                $image->move(public_path('assets/prove'), $imageName);
+                // Delete previous image if exists
+                if ($report->prove) {
+                    unlink(public_path('assets/prove/' . $report->prove));
+                }
+                $report->prove = $imageName;
+            }
+    
+            // Update report fields
+            $report->type = $request->type;
+            $report->title = $request->title; // This was commented out; uncommenting to ensure title is updated
+            $report->description = $request->description;
+            $report->status = $request->status;
+            $report->mahasiswa = $request->mahasiswa;
+            $report->dosen_wali = $request->dosen_wali;
+            $report->save();
+    
+            return response()->json(['status' => true, 'message' => 'Report successfully updated'], 200);
+        } catch (\Illuminate\Validation\ValidationException $e) {
+            // Return validation error messages
+            return response()->json(['status' => false, 'message' => $e->errors()], 422);
+        } catch (\Exception $e) {
+            // Handle other exceptions
+            return response()->json(['status' => false, 'message' => $e->getMessage()], 500);
         }
-        $report->title = $request->title;
-        $report->type = $request->type;
-        $report->description = $request->description;
-        $report->status = $request->status;
-        $report->mahasiswa = $request->mahasiswa;
-        $report->dosen_wali = $request->dosen_wali;
-        $report->save();
-        
-        return response()->json(['status' => true,'message'=>'Report Success Updated'], 200);
     }
+    
 
     public function updateStatus(Request $request, $id)
     {

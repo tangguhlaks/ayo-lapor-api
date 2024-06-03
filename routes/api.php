@@ -28,7 +28,7 @@ Route::post('/count-by-type', [ReportController::class, 'getCountByType']);
 Route::get('/report/{id}', [ReportController::class, 'show']);
 Route::get('/report-by-username/{username}', [ReportController::class, 'showByUsername']);
 Route::get('/report', [ReportController::class, 'showAll']);
-Route::put('/report/{id}', [ReportController::class, 'update']);
+Route::post('/report-update', [ReportController::class, 'update']);
 Route::put('/report-update-status/{id}', [ReportController::class, 'updateStatus']);
 Route::delete('/report/{id}', [ReportController::class, 'destroy']);
 
