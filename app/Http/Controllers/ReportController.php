@@ -99,6 +99,7 @@ class ReportController extends Controller
             // Find the report by its id
             $report = Report::select("reports.*","users.first_name","users.last_name")
                               ->leftJoin("users","users.id","=","reports.mahasiswa")
+                              ->orderBy("reports.id","DESC")
                               ->get();
 
             // Return the view with the report data
@@ -115,6 +116,7 @@ class ReportController extends Controller
             $report = Report::select("reports.*","users.first_name","users.last_name")
                               ->leftJoin("users","users.id","=","reports.mahasiswa")
                               ->where("users.username",$username)
+                              ->orderBy("reports.id","DESC")
                               ->get();
 
             // Return the view with the report data
@@ -139,6 +141,7 @@ class ReportController extends Controller
             $report = Report::select("reports.*", "users.first_name", "users.last_name")
                 ->leftJoin("users", "users.id", "=", "reports.mahasiswa")
                 ->whereIn("reports.status", $statuses)
+                ->orderBy("reports.id","DESC")
                 ->get();
                 
             // Return the view with the report data

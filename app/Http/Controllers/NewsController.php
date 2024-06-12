@@ -67,7 +67,7 @@ class NewsController extends Controller
     {
         try {
             // Find the News by its id
-            $news = News::all();
+            $news = News::select("news.*")->orderBy("news.id","DESC")->get();
 
             // Return the view with the News data
             return response()->json(['status' => true,'data'=>$news], 200);
